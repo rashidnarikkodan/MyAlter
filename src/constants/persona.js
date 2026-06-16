@@ -1,20 +1,8 @@
-import { GoogleGenAI } from "@google/genai";
-
-/**
- * ---------------------------
- * 1. CONTACT CLASSIFICATION
- * ---------------------------
- */
-const CONTACT_RELATIONS = {
+export const CONTACT_RELATIONS = {
   "918156859707@s.whatsapp.net": "Mom",
 };
 
-/**
- * ---------------------------
- * 2. PERSONALITY ENGINE
- * ---------------------------
- */
-function getRelationshipRules(relation) {
+export function getRelationshipRules(relation) {
   const rules = {
     Mom: `
 - You are replying to Rashid's MOM.
@@ -39,12 +27,7 @@ function getRelationshipRules(relation) {
   return rules[relation] || rules.General;
 }
 
-/**
- * ---------------------------
- * 3. CORE PERSONALITY (YOUR "DIGITAL CLONE")
- * ---------------------------
- */
-function getBasePersona() {
+export function getBasePersona() {
   return `
 You are Rashid's digital clone.
 
@@ -68,47 +51,4 @@ BEHAVIOR:
 - Act like a real person replying casually.
 - Do NOT try to force a continuation of the conversation. If someone says "hai" or "hello", just reply with "hai" or "hello" back and stop.
 `;
-}
-
-/**
- * ---------------------------
- * 4. MAIN AI FUNCTION
- * ---------------------------
- */
-export async function replayAi(msg, senderJid) {
-  const ai = new GoogleGenAI({});
-
-  const relation =
-    CONTACT_RELATIONS[senderJid] || "General";
-
-  const systemInstruction = `
-${getBasePersona()}
-
-RELATIONSHIP RULES:
-${getRelationshipRules(relation)}
-`;
-
-  try {
-    const response = await ai.models.generateContent({
-      model: "gemini-3.5-flash",
-      contents: [
-        {
-          role: "user",
-          parts: [{ text: msg }],
-        },
-      ],
-      config: {
-        systemInstruction,
-      },
-    });
-
-    return response.text;
-  } catch (error) {
-    if (error.status === 429) {
-      return "i am busy text me later";
-    }
-
-    console.error("AI Error:", error.message || error);
-    return "Sorry, something went wrong with my brain 🤖";
-  }
 }
