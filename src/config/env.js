@@ -6,6 +6,7 @@ export const config = {
   xaiApiKey: process.env.XAI_API_KEY,
   authInfoDir: process.env.AUTH_INFO_DIR || 'auth_info',
   logLevel: process.env.LOG_LEVEL || 'info',
+  maxHistoryLimit: parseInt(process.env.MAX_HISTORY_LIMIT || '20', 10),
 };
 
 // Simple validation
