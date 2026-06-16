@@ -74,3 +74,39 @@ ${getRelationshipRules(relation)}
     return "Sorry, something went wrong with my brain 🤖";
   }
 }
+
+export async function transcribeAudio(buffer, mimeType) {
+  // Clean mimeType if it contains codecs, e.g. "audio/ogg; codecs=opus" -> "audio/ogg"
+  const cleanMimeType = mimeType.split(';')[0].trim();
+  
+  try {
+    logger.info({ mimeType: cleanMimeType }, "Transcribing audio using Gemini...");
+    
+    const response = await ai.models.generateContent({
+      model: "gemini-3.5-flash",
+      contents: [
+        {
+          role: "user",
+          parts: [
+            {
+              inlineData: {
+                mimeType: cleanMimeType,
+                data: buffer.toString("base64"),
+              },
+            },
+            {
+              text: "Transcribe the spoken audio. If the audio is in Malayalam, Manglish, or English, transcribe it in the spoken language. Output only the exact transcription text, nothing else. Do not add any explanation, notes, or translation."
+            }
+          ],
+        },
+      ],
+    });
+
+    const transcript = response.text?.trim() || "";
+    logger.info({ transcriptLength: transcript.length }, "Audio transcription complete");
+    return transcript;
+  } catch (error) {
+    logger.error(error, "Failed to transcribe audio");
+    throw error;
+  }
+}
